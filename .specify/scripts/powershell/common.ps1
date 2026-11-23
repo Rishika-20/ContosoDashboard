@@ -1,6 +1,28 @@
 #!/usr/bin/env pwsh
 # Common PowerShell functions analogous to common.sh
 
+function Resolve-TemplateContent {
+    param(
+        [Parameter(Mandatory=$true)]
+        [string]$TemplateName,
+        [Parameter(Mandatory=$true)]
+        [string]$RepoRoot
+    )
+
+    $templateCandidates = @(
+        (Join-Path $RepoRoot ".specify/templates/$TemplateName.md"),
+        (Join-Path $RepoRoot ".specify/templates/$TemplateName-template.md")
+    )
+
+    foreach ($candidate in $templateCandidates) {
+        if (Test-Path -Path $candidate -PathType Leaf) {
+            return Get-Content -Path $candidate -Raw
+        }
+    }
+
+    return $null
+}
+
 function Get-RepoRoot {
     try {
         $result = git rev-parse --show-toplevel 2>$null
