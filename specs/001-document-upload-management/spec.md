@@ -19,7 +19,7 @@ An employee selects one or more supported work documents, enters the required me
 
 1. **Given** an authenticated employee has selected a supported file up to 25 MB, **When** the employee provides a title and category and submits the upload, **Then** the document is stored and shown in My Documents with title, category, uploader, upload date, size, and file type.
 2. **Given** an authenticated employee uploads a file larger than 25 MB or with an unsupported file type, **When** the upload is submitted, **Then** the system rejects the file and explains the applicable limit or allowed file types.
-3. **Given** an uploaded file fails malware scanning, **When** the upload completes, **Then** the file is not made available and the employee receives a security rejection message.
+3. **Given** an uploaded file fails malware scanning, **When** the upload completes, **Then** the file is quarantined and not made available, the employee receives a security rejection message, and audit metadata records the scan status and failure.
 
 ---
 
@@ -41,16 +41,16 @@ An employee browses personal or project documents, searches metadata, and previe
 
 ### User Story 3 - Maintain and Share Documents (Priority: P2)
 
-A document owner or authorized project manager edits metadata, replaces a file, deletes a document, or shares it with selected users or teams.
+A document owner edits metadata, replaces a file, deletes a document, or shares it with selected users or teams.
 
 **Why this priority**: Ongoing ownership and controlled sharing are required for a manageable centralized document library.
 
-**Independent Test**: An owner and an authorized project manager can perform the allowed maintenance actions, and a recipient receives an in-app notification and sees the document in Shared with Me.
+**Independent Test**: An owner can perform the allowed maintenance actions, and a recipient receives an in-app notification and sees the document in Shared with Me.
 
 **Acceptance Scenarios**:
 
-1. **Given** the signed-in employee owns a document, **When** the employee edits title, description, category, or tags, **Then** the updated metadata is saved and displayed.
-2. **Given** the signed-in employee owns a document or is an authorized project manager, **When** the employee confirms deletion, **Then** the document is permanently removed from document storage and listings.
+1. **Given** the signed-in employee owns a document, **When** the employee edits title, description, category, or tags or replaces the file, **Then** the existing document identity and metadata are preserved and the updated metadata or file is displayed.
+2. **Given** the signed-in employee owns a document, **When** the employee confirms deletion, **Then** the document is permanently removed from document storage and listings.
 3. **Given** an owner shares a document with a user or team, **When** sharing succeeds, **Then** recipients receive an in-app notification and can access the document according to the grant.
 
 ---
@@ -90,6 +90,7 @@ A dashboard user sees recent documents and document counts, and an administrator
 - How does the system handle duplicate filenames? Files remain independently identifiable even when original names are identical.
 - What happens when a file name contains path separators or other unsafe characters? The name must not determine the storage location and must be handled safely.
 - How does the system handle a user who loses project membership after receiving direct sharing? The project grant is removed, but access remains only if separately shared.
+- How does the system handle team or department membership changes for a team-shared document? Access is recalculated from current membership on every authorization check: joining grants access and leaving revokes application access automatically.
 - What happens if malware scanning is unavailable? The upload is not made available until scanning completes successfully.
 - How does the system handle a document with no associated project? It is treated as a personal or team resource according to the selected category and sharing grants.
 
@@ -97,23 +98,23 @@ A dashboard user sees recent documents and document counts, and an administrator
 
 ### Functional Requirements
 
-- **FR-001**: The system MUST allow an authenticated employee to select and upload one or more PDF, Microsoft Word, Microsoft Excel, Microsoft PowerPoint, text, JPEG, or PNG files.
+- **FR-001**: The system MUST allow an authenticated employee to select and upload one or more PDF, Microsoft Word, Microsoft Excel, Microsoft PowerPoint, text, JPEG, or PNG files. Multi-file uploads MUST use partial-success processing: each file is processed independently, successful uploads are retained, failures are reported individually, and retrying failed files MUST NOT re-upload successful files.
 - **FR-002**: The system MUST reject a file over 25 MB and any file type outside the supported allowlist, and MUST identify the rejection reason.
 - **FR-003**: The system MUST require a document title and category and MUST allow optional description, project association, and tags.
 - **FR-004**: The system MUST automatically record uploader, upload date and time, file size, original file type, and a supported file type field.
-- **FR-005**: The system MUST scan every uploaded file for malware before it becomes available.
+- **FR-005**: The system MUST scan every uploaded file for malware before it becomes available. A file that fails scanning MUST remain quarantined and inaccessible for 30 days, allow only authorized administrator retry or permanent purge during that period, and record scan status and failure details. If scanning is unavailable, the upload MUST remain pending and inaccessible until scanning succeeds.
 - **FR-006**: The system MUST display upload progress and a clear success or failure result.
 - **FR-007**: The system MUST store uploaded files separately from web-accessible public content and enforce authorization when serving downloads or previews.
 - **FR-008**: My Documents MUST list the signed-in user's uploaded documents and display title, category, upload date, file size, and associated project.
 - **FR-009**: My Documents MUST support sorting by title, upload date, category, and file size and filtering by category, project, and date range.
 - **FR-010**: The system MUST allow authorized users to search by title, description, tags, uploader name, and associated project and MUST exclude inaccessible documents.
 - **FR-011**: A permitted user MUST be able to download a document and preview supported PDF and image documents in the browser.
-- **FR-012**: A document owner MUST be able to edit title, description, category, and tags and replace the document file.
-- **FR-013**: An uploader MUST be able to delete an uploaded document after confirmation; a project manager MUST be able to delete documents associated with managed projects.
+- **FR-012**: A document owner MUST be able to edit title, description, category, and tags and replace the document file in place, preserving the Document ID and existing metadata. The replacement MUST be atomic: the old file remains available if storage or database update fails, and the old file MUST be deleted only after the new file is stored successfully and the document record is updated.
+- **FR-013**: A document uploader MUST be able to delete that document after confirmation. Project managers MUST NOT receive deletion authority solely from project management role or project membership.
 - **FR-014**: Deleted documents MUST be permanently removed from document storage and document listings.
-- **FR-015**: A document owner MUST be able to share a document with specific users or teams.
+- **FR-015**: A document owner MUST be able to share a document with specific users or teams. Team shares MUST be resolved against current team or department membership for every authorization decision: joining the team grants access automatically, and leaving the team revokes access immediately. Previously downloaded copies MUST NOT be assumed revocable outside the application.
 - **FR-016**: The system MUST notify recipients in-app when a document is shared and list shared documents in Shared with Me.
-- **FR-017**: Project team members MUST be able to view and download documents associated with their accessible projects, subject to role and project membership checks.
+- **FR-017**: Any current project member MUST be able to view, download, and upload documents associated with that project. Team leads and project managers MUST NOT receive project-document upload authority solely from role; active project membership MUST remain required.
 - **FR-018**: A permitted user on a task detail view MUST be able to attach or upload a document and MUST have the task's project association applied.
 - **FR-019**: The dashboard MUST show the five most recently uploaded documents for the signed-in user and the user's document count.
 - **FR-020**: The system MUST notify users when a document is shared with them or a new document is added to one of their projects.
@@ -123,6 +124,14 @@ A dashboard user sees recent documents and document counts, and an administrator
 - **FR-024**: The system MUST operate with local filesystem storage and remain usable without external cloud services.
 - **FR-025**: The storage implementation MUST be replaceable through a storage interface, while document business rules and metadata remain independent of the selected provider.
 - **FR-026**: The system MUST preserve existing mock authentication behavior and require the existing name, role, department, and identity claims needed for authorization.
+
+The authorization model MUST follow these rules:
+
+- Project team membership grants view and download access only to documents explicitly associated with that project.
+- Team leads MUST NOT receive automatic access to documents across projects or team members; project membership remains the grant for project documents.
+- Only the document owner MUST be able to edit metadata, replace the file, or delete the document.
+- The owner MUST be able to share with specific users or teams.
+- Any access beyond ownership, project membership, or an explicit share MUST require a separately authorized exception.
 
 ### Key Entities *(include if feature involves data)*
 
@@ -136,6 +145,7 @@ A dashboard user sees recent documents and document counts, and an administrator
 ## Assumptions
 
 - The existing role model distinguishes employees, team leads, project managers, and administrators, and existing project membership data is available for authorization.
+- Team leads do not have automatic cross-project document access; access is determined by ownership, project membership, or an explicit share.
 - Supported uploads include PDF, Microsoft Office formats, plain text, JPEG, and PNG; Office validation uses file extensions and MIME type metadata.
 - Malware scanning is an external or local security component; the training environment may use a testable scanner boundary, but no unscanned file is available.
 - "Teams" are represented by existing user grouping or department membership where available.
