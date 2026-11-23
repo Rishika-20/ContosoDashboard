@@ -17,6 +17,11 @@ public class ApplicationDbContext : DbContext
     public DbSet<Notification> Notifications { get; set; } = null!;
     public DbSet<ProjectMember> ProjectMembers { get; set; } = null!;
     public DbSet<Announcement> Announcements { get; set; } = null!;
+    public DbSet<Document> Documents { get; set; } = null!;
+    public DbSet<DocumentShare> DocumentShares { get; set; } = null!;
+    public DbSet<DocumentTag> DocumentTags { get; set; } = null!;
+    public DbSet<DocumentActivity> DocumentActivities { get; set; } = null!;
+    public DbSet<DocumentScanAttempt> DocumentScanAttempts { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -63,6 +68,40 @@ public class ApplicationDbContext : DbContext
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Email)
             .IsUnique();
+
+        modelBuilder.Entity<Document>().HasIndex(d => new { d.UploaderId, d.UploadDateUtc });
+        modelBuilder.Entity<Document>().HasIndex(d => new { d.ProjectId, d.ScanStatus });
+        modelBuilder.Entity<Document>().HasIndex(d => d.Category);
+        modelBuilder.Entity<Document>().HasIndex(d => d.Title);
+        modelBuilder.Entity<DocumentTag>().HasIndex(t => new { t.DocumentId, t.Name }).IsUnique();
+        modelBuilder.Entity<DocumentActivity>().HasIndex(a => new { a.DocumentId, a.EventTimeUtc });
+        modelBuilder.Entity<DocumentActivity>().HasIndex(a => new { a.ActorUserId, a.EventTimeUtc });
+        modelBuilder.Entity<DocumentActivity>().HasIndex(a => new { a.ProjectId, a.EventTimeUtc });
+        modelBuilder.Entity<DocumentActivity>().HasIndex(a => new { a.ActivityType, a.EventTimeUtc });
+        modelBuilder.Entity<DocumentScanAttempt>().HasIndex(a => new { a.DocumentId, a.CorrelationId }).IsUnique();
+        modelBuilder.Entity<DocumentScanAttempt>().HasIndex(a => new { a.Status, a.EnqueuedAtUtc });
+        modelBuilder.Entity<DocumentShare>().HasIndex(s => s.TargetUserId);
+        modelBuilder.Entity<DocumentShare>().HasIndex(s => s.TargetDepartment);
+        modelBuilder.Entity<DocumentShare>()
+            .HasOne(s => s.Document).WithMany(d => d.Shares).HasForeignKey(s => s.DocumentId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Document>()
+            .HasOne(d => d.Uploader).WithMany().HasForeignKey(d => d.UploaderId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<Document>()
+            .HasOne(d => d.Project).WithMany().HasForeignKey(d => d.ProjectId).OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<Document>()
+            .HasOne(d => d.Task).WithMany().HasForeignKey(d => d.TaskId).OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<DocumentShare>()
+            .HasOne(s => s.TargetUser).WithMany().HasForeignKey(s => s.TargetUserId).OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<DocumentShare>()
+            .HasOne(s => s.GrantedByUser).WithMany().HasForeignKey(s => s.GrantedByUserId).OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<DocumentTag>()
+            .HasOne(t => t.Document).WithMany(d => d.Tags).HasForeignKey(t => t.DocumentId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<DocumentScanAttempt>()
+            .HasOne(a => a.Document).WithMany(d => d.ScanAttempts).HasForeignKey(a => a.DocumentId).OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Document>().HasMany(d => d.Activities).WithOne(a => a.Document)
+            .HasForeignKey(a => a.DocumentId).OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<DocumentActivity>()
+            .HasOne(a => a.Actor).WithMany().HasForeignKey(a => a.ActorUserId).OnDelete(DeleteBehavior.Restrict);
 
         // Seed initial data
         SeedData(modelBuilder);

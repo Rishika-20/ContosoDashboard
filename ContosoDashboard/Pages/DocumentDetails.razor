@@ -1,0 +1,171 @@
+@page "/documents/{DocumentId:int}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@inject IDocumentService Documents
+@inject AuthenticationStateProvider AuthState
+@inject NavigationManager Navigation
+
+<PageTitle>Document details</PageTitle>
+@if (document is null) { <div class="alert alert-danger">Document unavailable or unauthorized.</div>; }
+else {
+    <h3>@document.Title</h3>
+    <p>@document.Description</p>
+    <dl><dt>Status</dt><dd>@document.ScanStatus</dd><dt>Category</dt><dd>@document.Category</dd></dl>
+    @if (document.ScanStatus == ScanStatus.Quarantined && isAdmin && !string.IsNullOrWhiteSpace(document.QuarantineFailureDetails))
+    {
+        <div class="alert alert-danger">Scan details: @document.QuarantineFailureDetails</div>
+    }
+    @if (document.ScanStatus == ScanStatus.Available) {
+        <a class="btn btn-primary" href="/api/documents/@document.DocumentId/preview" target="_blank" rel="noopener">Preview</a>
+        <a class="btn btn-secondary" href="/api/documents/@document.DocumentId/download">Download</a>
+    }
+    @if (owns) {
+        <section class="card mt-3 p-3">
+            <h4>Maintain document</h4>
+            <div class="row g-2">
+                <div class="col-md-3"><label>Title</label><input class="form-control" @bind="editTitle" maxlength="255" /></div>
+                <div class="col-md-3"><label>Description</label><input class="form-control" @bind="editDescription" maxlength="2000" /></div>
+                <div class="col-md-2"><label>Category</label><select class="form-select" @bind="editCategory">@foreach (var value in DocumentValidation.Categories.OrderBy(x => x)) { <option value="@value">@value</option> }</select></div>
+                <div class="col-md-2"><label>Tags (comma separated)</label><input class="form-control" @bind="editTags" /></div>
+                <div class="col-md-2 d-flex align-items-end"><button class="btn btn-outline-primary" @onclick="SaveMetadataAsync">Save metadata</button></div>
+            </div>
+            <div class="row g-2 mt-1">
+                <div class="col-md-6"><label>Replace file</label><InputFile OnChange="OnReplacementChanged" accept=".pdf,.docx,.xlsx,.pptx,.txt,.jpg,.jpeg,.png" /></div>
+                <div class="col-md-3 d-flex align-items-end"><button class="btn btn-outline-secondary" @onclick="ReplaceAsync" disabled="@(replacement is null)">Replace and rescan</button></div>
+            </div>
+            <div class="mt-3">
+                <h5>Share</h5>
+                <div class="row g-2">
+                    <div class="col-md-3"><label>Recipient user ID</label><InputNumber class="form-control" @bind-Value="targetUserId" /></div>
+                    <div class="col-md-3"><label>Department/team</label><input class="form-control" @bind="targetDepartment" maxlength="100" /></div>
+                    <div class="col-md-3 d-flex align-items-end"><button class="btn btn-outline-primary" @onclick="ShareAsync">Share document</button></div>
+                </div>
+                @foreach (var share in document.Shares)
+                {
+                    <div class="mt-2">@(share.TargetUserId.HasValue ? $"User {share.TargetUserId}" : $"Department {share.TargetDepartment}")
+                        <button class="btn btn-sm btn-outline-danger ms-2" @onclick="() => RemoveShareAsync(share.DocumentShareId)">Remove share</button>
+                    </div>
+                }
+            </div>
+            <div class="mt-3">
+                @if (confirmingDelete)
+                {
+                    <span>Delete this document permanently? </span>
+                    <button class="btn btn-danger" @onclick="DeleteAsync">Confirm delete</button>
+                    <button class="btn btn-secondary" @onclick="() => confirmingDelete = false">Cancel</button>
+                }
+                else { <button class="btn btn-outline-danger" @onclick="() => confirmingDelete = true">Delete…</button>; }
+            </div>
+        </section>
+    }
+    @if (isAdmin && document.ScanStatus == ScanStatus.Quarantined)
+    {
+        <section class="mt-3">
+            <p class="text-muted">Quarantined files are not accessible to regular users. Retry or purge is administrator-only.</p>
+            <button class="btn btn-warning" @onclick="RetryAsync">Retry scan</button>
+            <button class="btn btn-danger ms-2" @onclick="PurgeAsync">Purge permanently</button>
+        </section>
+    }
+}
+@if (!string.IsNullOrWhiteSpace(message)) { <div class="alert alert-info mt-3" role="status">@message</div>; }
+
+@code {
+    [Parameter] public int DocumentId { get; set; }
+    private Document? document;
+    private bool owns;
+    private bool isAdmin;
+    private bool confirmingDelete;
+    private int currentUserId;
+    private string editTitle = "";
+    private string? editDescription;
+    private string editCategory = "General";
+    private string editTags = "";
+    private int? targetUserId;
+    private string? targetDepartment;
+    private IBrowserFile? replacement;
+    private string? message;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var state = await AuthState.GetAuthenticationStateAsync();
+        var user = state.User;
+        int.TryParse(user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out currentUserId);
+        isAdmin = user.IsInRole(nameof(UserRole.Administrator));
+        await RefreshAsync();
+    }
+
+    private async Task RefreshAsync()
+    {
+        document = await Documents.GetAsync(currentUserId, DocumentId);
+        owns = document is not null && document.UploaderId == currentUserId && document.ScanStatus != ScanStatus.Quarantined;
+        if (document is not null)
+        {
+            editTitle = document.Title;
+            editDescription = document.Description;
+            editCategory = document.Category;
+            editTags = string.Join(", ", document.Tags.Select(t => t.Name));
+        }
+    }
+
+    private Task OnReplacementChanged(InputFileChangeEventArgs args) { replacement = args.File; return Task.CompletedTask; }
+
+    private async Task SaveMetadataAsync()
+    {
+        var tags = editTags.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        message = await Documents.UpdateAsync(currentUserId, DocumentId, editTitle, editDescription, editCategory,
+            document?.ProjectId, tags) ? "Metadata saved." : "Metadata could not be updated.";
+        await RefreshAsync();
+    }
+
+    private async Task ReplaceAsync()
+    {
+        if (replacement is null) return;
+        try
+        {
+            await using var stream = replacement.OpenReadStream(DocumentValidation.MaxFileSizeBytes);
+            using var memory = new MemoryStream();
+            await stream.CopyToAsync(memory);
+            var ok = await Documents.ReplaceAsync(currentUserId, DocumentId,
+                new UploadFile(memory.ToArray(), replacement.Name, replacement.ContentType));
+            message = ok ? "Replacement stored; it remains pending until security scanning succeeds." : "Replacement failed; the prior file was retained.";
+            replacement = null;
+            await RefreshAsync();
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        {
+            message = "Choose a supported replacement file no larger than 25 MB.";
+        }
+    }
+
+    private async Task ShareAsync()
+    {
+        var ok = await Documents.AddShareAsync(currentUserId, DocumentId, targetUserId, targetDepartment);
+        message = ok ? "Document shared." : "Share target is invalid or you are not the owner.";
+        targetUserId = null;
+        targetDepartment = null;
+        await RefreshAsync();
+    }
+
+    private async Task RemoveShareAsync(int shareId)
+    {
+        message = await Documents.RemoveShareAsync(currentUserId, DocumentId, shareId) ? "Share removed." : "Share could not be removed.";
+        await RefreshAsync();
+    }
+
+    private async Task DeleteAsync()
+    {
+        if (await Documents.DeleteAsync(currentUserId, DocumentId)) Navigation.NavigateTo("/documents");
+        else message = "Document could not be deleted.";
+    }
+
+    private async Task RetryAsync()
+    {
+        message = await Documents.RetryQuarantineAsync(currentUserId, DocumentId) ? "Scan retry queued." : "Retry was not authorized.";
+        await RefreshAsync();
+    }
+
+    private async Task PurgeAsync()
+    {
+        message = await Documents.PurgeQuarantineAsync(currentUserId, DocumentId) ? "Quarantined document permanently purged." : "Purge was not authorized.";
+        if (document is not null) await RefreshAsync();
+    }
+}

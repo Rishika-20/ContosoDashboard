@@ -13,21 +13,34 @@
 From the repository root:
 
 ```powershell
-dotnet restore .\ContosoDashboard\ContosoDashboard.csproj
-dotnet build .\ContosoDashboard\ContosoDashboard.csproj
+dotnet restore .\ContosoDashboard.slnx
+dotnet build .\ContosoDashboard.slnx
 dotnet run --project .\ContosoDashboard\ContosoDashboard.csproj
 ```
 
 Sign in through the existing mock login and select a seeded user.
 
-To run the asynchronous scanner locally:
+By default, Development uses the local pending-scan worker and local test scanner, so uploads remain local and do not require Azure services. This scanner is a training/test implementation only and is not suitable for production malware protection.
+
+To run the Azure Queue Storage trigger locally:
 
 ```powershell
 azurite --queue
+Copy-Item .\DocumentScanner.Function\local.settings.json.example .\DocumentScanner.Function\local.settings.json
 func start --project .\DocumentScanner.Function
 ```
 
-Configure `AzureWebJobsStorage` for Azurite and set the web application's queue connection to `document-scans`. No file bytes or secrets belong in queue messages.
+For queue-driven scanning, set `DocumentUpload:UseLocalScanWorker` to `false` in the web application's development configuration and use `AzureWebJobsStorage=UseDevelopmentStorage=true`. The Function project points its local file provider at `..\ContosoDashboard\AppData\uploads`; keep both processes on the same local filesystem. Azurite uses the queue `document-scans`, with bounded retries routed to `document-scans-poison`. No file bytes or secrets belong in queue messages. In Azure, configure `DocumentQueueServiceUri` and grant the app identity the required Queue Storage role rather than storing a connection key.
+
+The application stores local files in `ContosoDashboard/AppData/uploads`; do not place the upload directory under `wwwroot`. Development database initialization uses `EnsureCreated()`. To recreate development-only document metadata, stop the application and recreate/reset the LocalDB database, then restart so seed and document tables are created again.
+
+Queue host settings use `document-scans` as the trigger queue and `document-scans-poison` for repeated infrastructure failures. Copy `DocumentScanner.Function/local.settings.json.example` to `local.settings.json` for local-only Azurite placeholders; do not add credentials or connection secrets to source control. The local settings file is ignored by git. Cloud deployments should use managed identity or a secret provider and a production malware scanner implementation.
+
+## Validation status
+
+- `dotnet build ContosoDashboard.slnx`: passed.
+- `dotnet test ContosoDashboard.slnx`: passed (40 dashboard/service tests and 5 scan-worker tests).
+- Manual browser/LocalDB/Azurite walkthrough: not run in the current environment because `sqllocaldb`, `azurite`, and Azure Functions Core Tools (`func`) are unavailable. Complete the scenarios below after installing those prerequisites.
 
 ## Validation Scenarios
 

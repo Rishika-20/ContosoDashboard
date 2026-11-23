@@ -6,6 +6,7 @@
 @inject IDashboardService DashboardService
 @inject INotificationService NotificationService
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IDocumentService DocumentService
 
 <PageTitle>Dashboard - ContosoDashboard</PageTitle>
 
@@ -89,6 +90,9 @@
                 <a href="/notifications" class="list-group-item list-group-item-action">
                     <i class="bi bi-bell"></i> View Notifications
                 </a>
+                <a href="/documents" class="list-group-item list-group-item-action">
+                    <i class="bi bi-file-earmark-text"></i> Documents (@documentCount)
+                </a>
                 <a href="/profile" class="list-group-item list-group-item-action">
                     <i class="bi bi-person"></i> Edit Profile
                 </a>
@@ -118,6 +122,28 @@
             }
         </div>
     </div>
+
+    <div class="row mt-4">
+        <div class="col">
+            <h3>Recent Documents</h3>
+            @if (latestDocuments.Count > 0)
+            {
+                <div class="list-group">
+                    @foreach (var document in latestDocuments.Take(5))
+                    {
+                        <a class="list-group-item list-group-item-action" href="/documents/@document.DocumentId">
+                            <strong>@document.Title</strong>
+                            <span class="text-muted ms-2">@document.Category · @document.UploadDateUtc.ToLocalTime().ToString("MMM dd, yyyy")</span>
+                        </a>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="text-muted">No documents uploaded yet.</p>
+            }
+        </div>
+    </div>
 </div>
 
 @code {
@@ -126,6 +152,8 @@
     private List<Notification>? recentNotifications;
     private string userName = "User";
     private int currentUserId = 0;
+    private int documentCount = 0;
+    private IReadOnlyList<Document> latestDocuments = Array.Empty<Document>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -146,6 +174,7 @@
             summary = await DashboardService.GetDashboardSummaryAsync(currentUserId);
             announcements = await DashboardService.GetActiveAnnouncementsAsync();
             recentNotifications = await NotificationService.GetUserNotificationsAsync(currentUserId);
+            (documentCount, latestDocuments) = await DocumentService.DashboardAsync(currentUserId);
         }
     }
 

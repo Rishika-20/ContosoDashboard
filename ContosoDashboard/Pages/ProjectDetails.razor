@@ -7,6 +7,7 @@
 @inject IProjectService ProjectService
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IDocumentService DocumentService
 
 <PageTitle>Project Details - ContosoDashboard</PageTitle>
 
@@ -89,6 +90,24 @@
                     </div>
                 </div>
 
+                <div class="card mb-4">
+                    <div class="card-header"><h5 class="mb-0">Project Documents</h5></div>
+                    <div class="card-body">
+                        <div class="row g-2 mb-3">
+                            <div class="col-md-3"><label>Title</label><input class="form-control" @bind="documentTitle" maxlength="255" /></div>
+                            <div class="col-md-2"><label>Category</label><select class="form-select" @bind="documentCategory">@foreach (var value in DocumentValidation.Categories.OrderBy(x => x)) { <option value="@value">@value</option> }</select></div>
+                            <div class="col-md-4"><label>File</label><InputFile OnChange="OnProjectFileChanged" accept=".pdf,.docx,.xlsx,.pptx,.txt,.jpg,.jpeg,.png" /></div>
+                            <div class="col-md-3 d-flex align-items-end"><button class="btn btn-primary" @onclick="UploadProjectDocumentAsync" disabled="@(selectedProjectFile is null)">Upload to project</button></div>
+                        </div>
+                        @if (!string.IsNullOrEmpty(documentMessage)) { <p role="status">@documentMessage</p> }
+                        @if (!documents.Any()) { <p class="text-muted">No available project documents.</p>; }
+                        else {
+                            @foreach (var document in documents) {
+                                <div><a href="/documents/@document.DocumentId">@document.Title</a></div>
+                            }
+                        }
+                    </div>
+                </div>
                 <div class="card">
                     <div class="card-header">
                         <h5 class="mb-0">Project Tasks</h5>
@@ -238,6 +257,11 @@
 
     private Project? project;
     private int currentUserId = 0;
+    private IReadOnlyList<Document> documents = Array.Empty<Document>();
+    private IBrowserFile? selectedProjectFile;
+    private string documentTitle = "";
+    private string documentCategory = "Project";
+    private string? documentMessage;
 
     protected override async Task OnInitializedAsync()
     {
@@ -253,11 +277,40 @@
         if (currentUserId > 0)
         {
             project = await ProjectService.GetProjectByIdAsync(ProjectId, currentUserId);
+            documents = await DocumentService.ProjectAsync(currentUserId, ProjectId);
         }
         
         if (project == null)
         {
             NavigationManager.NavigateTo("/projects");
+        }
+    }
+
+    private Task OnProjectFileChanged(InputFileChangeEventArgs args)
+    {
+        selectedProjectFile = args.File;
+        if (string.IsNullOrWhiteSpace(documentTitle))
+            documentTitle = Path.GetFileNameWithoutExtension(args.File.Name);
+        return Task.CompletedTask;
+    }
+
+    private async Task UploadProjectDocumentAsync()
+    {
+        if (selectedProjectFile is null || currentUserId <= 0 || project is null) return;
+        try
+        {
+            await using var stream = selectedProjectFile.OpenReadStream(DocumentValidation.MaxFileSizeBytes);
+            using var memory = new MemoryStream();
+            await stream.CopyToAsync(memory);
+            var result = await DocumentService.UploadAsync(currentUserId,
+                new UploadRequest(documentTitle, null, documentCategory, project.ProjectId, null, null),
+                new[] { new UploadFile(memory.ToArray(), selectedProjectFile.Name, selectedProjectFile.ContentType) });
+            documentMessage = result.FirstOrDefault()?.Message ?? "Upload failed.";
+            documents = await DocumentService.ProjectAsync(currentUserId, project.ProjectId);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        {
+            documentMessage = "The selected file could not be read; choose a supported file no larger than 25 MB.";
         }
     }
 

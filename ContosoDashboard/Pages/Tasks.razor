@@ -5,6 +5,7 @@
 @using System.Security.Claims
 @attribute [Authorize]
 @inject ITaskService TaskService
+@inject IDocumentService DocumentService
 @inject AuthenticationStateProvider AuthenticationStateProvider
 
 <PageTitle>My Tasks - ContosoDashboard</PageTitle>
@@ -55,6 +56,7 @@
     {
         <p><em>Loading...</em></p>
     }
+
     else if (!tasks.Any())
     {
         <div class="alert alert-info">No tasks found.</div>
@@ -126,6 +128,15 @@
                                 <button class="btn btn-sm btn-outline-primary" @onclick="() => ViewTaskDetails(task.TaskId)">
                                     <i class="bi bi-eye"></i>
                                 </button>
+                                <div class="mt-2">
+                                    <InputFile OnChange="@(args => OnTaskFileChanged(task.TaskId, args))" accept=".pdf,.docx,.xlsx,.pptx,.txt,.jpg,.jpeg,.png" />
+                                    <button class="btn btn-sm btn-outline-secondary mt-1" @onclick="() => UploadTaskDocumentAsync(task)" disabled="@(!taskFiles.ContainsKey(task.TaskId))">Attach document</button>
+                                    @if (taskMessages.TryGetValue(task.TaskId, out var message)) { <small class="d-block" role="status">@message</small> }
+                                    @if (taskDocuments.TryGetValue(task.TaskId, out var attached))
+                                    {
+                                        @foreach (var document in attached) { <a class="d-block small" href="/documents/@document.DocumentId">📎 @document.Title</a> }
+                                    }
+                                </div>
                             </td>
                         </tr>
                     }
@@ -140,6 +151,9 @@
     private string filterStatus = "";
     private string filterPriority = "";
     private int currentUserId = 0;
+    private readonly Dictionary<int, IBrowserFile> taskFiles = new();
+    private readonly Dictionary<int, string> taskMessages = new();
+    private readonly Dictionary<int, IReadOnlyList<Document>> taskDocuments = new();
 
     protected override async Task OnInitializedAsync()
     {
@@ -161,6 +175,9 @@
     private async Task LoadTasks()
     {
         tasks = await TaskService.GetUserTasksAsync(currentUserId);
+        taskDocuments.Clear();
+        foreach (var task in tasks)
+            taskDocuments[task.TaskId] = await DocumentService.TaskAsync(currentUserId, task.TaskId);
     }
 
     private async Task ApplyFilters()
@@ -177,6 +194,34 @@
         {
             await TaskService.UpdateTaskStatusAsync(taskId, currentUserId, newStatus);
             await LoadTasks();
+        }
+    }
+
+    private Task OnTaskFileChanged(int taskId, InputFileChangeEventArgs args)
+    {
+        taskFiles[taskId] = args.File;
+        return Task.CompletedTask;
+    }
+
+    private async Task UploadTaskDocumentAsync(TaskItem task)
+    {
+        if (!taskFiles.TryGetValue(task.TaskId, out var file) || currentUserId <= 0) return;
+        try
+        {
+            await using var stream = file.OpenReadStream(DocumentValidation.MaxFileSizeBytes);
+            using var memory = new MemoryStream();
+            await stream.CopyToAsync(memory);
+            var results = await DocumentService.UploadAsync(currentUserId,
+                new UploadRequest(Path.GetFileNameWithoutExtension(file.Name), null, "Project", task.ProjectId, task.TaskId, null),
+                new[] { new UploadFile(memory.ToArray(), file.Name, file.ContentType) });
+            var result = results.FirstOrDefault();
+            taskMessages[task.TaskId] = result is null ? "Upload failed." :
+                result.Success ? "Attached and pending security scan." : result.Message;
+            if (result?.Success == true) taskFiles.Remove(task.TaskId);
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException)
+        {
+            taskMessages[task.TaskId] = "Choose a supported file no larger than 25 MB.";
         }
     }
 

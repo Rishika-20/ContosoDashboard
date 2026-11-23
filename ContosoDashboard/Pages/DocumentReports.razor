@@ -1,0 +1,33 @@
+@page "/admin/documents/reports"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize(Roles = "Administrator")]
+@inject DocumentReportService Reports
+@inject AuthenticationStateProvider AuthState
+
+<PageTitle>Document reports</PageTitle>
+<h3>Document activity reports</h3>
+@if (report is null) { <p>Loading report…</p>; }
+else
+{
+    <h4>Uploaded file types</h4>
+    <table class="table"><thead><tr><th>Type</th><th>Documents</th></tr></thead><tbody>
+        @foreach (var item in report.FileTypes) { <tr><td>@item.FileType</td><td>@item.Count</td></tr> }
+    </tbody></table>
+    <h4>Active uploaders</h4>
+    <table class="table"><thead><tr><th>User ID</th><th>Uploads</th></tr></thead><tbody>
+        @foreach (var item in report.ActiveUploaders) { <tr><td>@item.UserId</td><td>@item.Count</td></tr> }
+    </tbody></table>
+    <h4>Document access patterns</h4>
+    <table class="table"><thead><tr><th>Actor ID</th><th>Outcome</th><th>Downloads</th></tr></thead><tbody>
+        @foreach (var item in report.AccessPatterns) { <tr><td>@item.ActorUserId</td><td>@item.Outcome</td><td>@item.Count</td></tr> }
+    </tbody></table>
+}
+
+@code {
+    private DocumentActivityReport? report;
+    protected override async Task OnInitializedAsync()
+    {
+        var user = (await AuthState.GetAuthenticationStateAsync()).User;
+        if (int.TryParse(user.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out var userId))
+            report = await Reports.GetActivityReportAsync(userId);
+    }
+}

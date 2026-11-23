@@ -17,13 +17,13 @@
 
 **Purpose**: Project initialization and feature structure
 
-- [ ] T001 Create the test project `ContosoDashboard.Tests/ContosoDashboard.Tests.csproj` with xUnit and EF Core SQLite or InMemory test dependencies
-- [ ] T002 [P] Add the Azure Functions project `DocumentScanner.Function/DocumentScanner.Function.csproj` with the isolated Queue Storage trigger and Azure Functions packages
-- [ ] T003 [P] Create feature configuration sections and add `AzureWebJobsStorage`, `DocumentQueue`, and local upload settings to `ContosoDashboard/appsettings.Development.json`
-- [ ] T004 [P] Create `ContosoDashboard/AppData/uploads/.gitkeep` and document local upload-directory setup in `specs/001-document-upload-management/quickstart.md`
-- [ ] T005 [P] Add queue-host configuration and the queue names `document-scans` and `document-scans-poison` to `DocumentScanner.Function/host.json`
-- [ ] T006 [P] Add `DocumentScanner.Function/local.settings.json.example` with Azurite storage placeholders and no credentials or secrets
-- [ ] T007 [P] Register the new test project and Azure Functions project in a repository solution if one is added at `ContosoDashboard.sln`
+- [X] T001 Create the test project `ContosoDashboard.Tests/ContosoDashboard.Tests.csproj` with xUnit and EF Core SQLite or InMemory test dependencies
+- [X] T002 [P] Add the Azure Functions project `DocumentScanner.Function/DocumentScanner.Function.csproj` with the isolated Queue Storage trigger and Azure Functions packages
+- [X] T003 [P] Create feature configuration sections and add `AzureWebJobsStorage`, `DocumentQueue`, and local upload settings to `ContosoDashboard/appsettings.Development.json`
+- [X] T004 [P] Create `ContosoDashboard/AppData/uploads/.gitkeep` and document local upload-directory setup in `specs/001-document-upload-management/quickstart.md`
+- [X] T005 [P] Add queue-host configuration and the queue names `document-scans` and `document-scans-poison` to `DocumentScanner.Function/host.json`
+- [X] T006 [P] Add `DocumentScanner.Function/local.settings.json.example` with Azurite storage placeholders and no credentials or secrets
+- [X] T007 [P] Register the new test project and Azure Functions project in a repository solution if one is added at `ContosoDashboard.sln`
 
 ---
 
@@ -33,28 +33,28 @@
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T008 [P] Create `ContosoDashboard/Models/Document.cs` with DocumentId, title `Required/trimmed`, description `string(2000)`, category `Required/string(100)`, uploader, project/task associations, and scan state fields
-- [ ] T009 [P] Create `ContosoDashboard/Models/DocumentShare.cs` with exactly one of TargetUserId or TargetDepartment `string(100)` required and owner-at-grant validation
-- [ ] T010 [P] Create `ContosoDashboard/Models/DocumentTag.cs` with Name `string(100), trimmed, unique per document, case-normalized`
-- [ ] T011 [P] Create `ContosoDashboard/Models/DocumentActivity.cs` with append-only activity fields, actor, optional project/recipient, outcome, and no file-content data
-- [ ] T012 [P] Create `ContosoDashboard/Models/DocumentScanAttempt.cs` with DocumentId, GUID CorrelationId, StorageKey, status, AttemptNumber starting at 1, timestamps, and sanitized FailureDetails
-- [ ] T013 [P] Add document enums and validation rules for `ScanStatus`, file types, activity types, and attempt outcomes in `ContosoDashboard/Models/Document.cs` and related model files
-- [ ] T014 Add the document entities and navigation relationships plus indexes for uploader/date, project/availability, category, title/search fields, and activity lookups to `ContosoDashboard/Data/ApplicationDbContext.cs`
-- [ ] T015 Update mock login department claims in `ContosoDashboard/Pages/Login.cshtml.cs` with `ClaimTypes.Department` or an application-specific department claim for the selected user's department
-- [ ] T016 [P] Define `IFileStorageService` and a GUID-relative-key upload/download/delete contract in `ContosoDashboard/Services/IFileStorageService.cs`
-- [ ] T017 [P] Implement `LocalFileStorageService` outside `wwwroot` under `AppData/uploads` in `ContosoDashboard/Services/LocalFileStorageService.cs`
-- [ ] T018 [P] Define `IMalwareScanner` and `ScanResult` statuses in `ContosoDashboard/Services/IMalwareScanner.cs`
-- [ ] T019 [P] Implement `TestableMalwareScanner` in `ContosoDashboard/Services/TestableMalwareScanner.cs` and keep it replaceable for production scanners
-- [ ] T020 Add document storage, scanner, queue producer, document, authorization, and reporting service registrations to `ContosoDashboard/Program.cs`
-- [ ] T021 [P] Create queue message contracts and bounded retry configuration types in `ContosoDashboard/Services/DocumentQueueModels.cs`
-- [ ] T022 Implement `IDocumentQueueService`/`DocumentQueueService` for Azure Queue Storage and a local/Azurite producer path in `ContosoDashboard/Services/`
-- [ ] T023 Create `DocumentAuthorizationService` in `ContosoDashboard/Services/DocumentAuthorizationService.cs` for owner, project membership, direct share, department share, task, and administrator quarantine rules
-- [ ] T024 [P] Add predefined document categories and allowlisted extension/MIME pairs plus the 25 MB limit in `ContosoDashboard/Services/DocumentValidation.cs`
-- [ ] T025 [P] Add structured document logging and safe failure helpers in `ContosoDashboard/Services/DocumentLogging.cs`
-- [ ] T026 [P] Add `DocumentShare`, document, tag, activity, and scan-attempt test fixtures in `ContosoDashboard.Tests/TestFixtures/DocumentTestFixtures.cs`
-- [ ] T027 [P] Write failing authorization tests for ownership, project membership, role-only overgrant, direct shares, and department membership in `ContosoDashboard.Tests/Services/DocumentAuthorizationServiceTests.cs`
-- [ ] T028 [P] Write failing validation/storage tests for 25 MB limit, allowlisted MIME/extension pairs, unsafe names, GUID keys, and cleanup in `ContosoDashboard.Tests/Services/DocumentStorageAndValidationTests.cs`
-- [ ] T029 Run the focused test project and verify the foundational tests fail before implementation, as required by the test-first workflow
+- [X] T008 [P] Create `ContosoDashboard/Models/Document.cs` with DocumentId, title `Required/trimmed`, description `string(2000)`, category `Required/string(100)`, uploader, project/task associations, and scan state fields
+- [X] T009 [P] Create `ContosoDashboard/Models/DocumentShare.cs` with exactly one of TargetUserId or TargetDepartment `string(100)` required and owner-at-grant validation
+- [X] T010 [P] Create `ContosoDashboard/Models/DocumentTag.cs` with Name `string(100), trimmed, unique per document, case-normalized`
+- [X] T011 [P] Create `ContosoDashboard/Models/DocumentActivity.cs` with append-only activity fields, actor, optional project/recipient, outcome, and no file-content data
+- [X] T012 [P] Create `ContosoDashboard/Models/DocumentScanAttempt.cs` with DocumentId, GUID CorrelationId, StorageKey, status, AttemptNumber starting at 1, timestamps, and sanitized FailureDetails
+- [X] T013 [P] Add document enums and validation rules for `ScanStatus`, file types, activity types, and attempt outcomes in `ContosoDashboard/Models/Document.cs` and related model files
+- [X] T014 Add the document entities and navigation relationships plus indexes for uploader/date, project/availability, category, title/search fields, and activity lookups to `ContosoDashboard/Data/ApplicationDbContext.cs`
+- [X] T015 Update mock login department claims in `ContosoDashboard/Pages/Login.cshtml.cs` with `ClaimTypes.Department` or an application-specific department claim for the selected user's department
+- [X] T016 [P] Define `IFileStorageService` and a GUID-relative-key upload/download/delete contract in `ContosoDashboard/Services/IFileStorageService.cs`
+- [X] T017 [P] Implement `LocalFileStorageService` outside `wwwroot` under `AppData/uploads` in `ContosoDashboard/Services/LocalFileStorageService.cs`
+- [X] T018 [P] Define `IMalwareScanner` and `ScanResult` statuses in `ContosoDashboard/Services/IMalwareScanner.cs`
+- [X] T019 [P] Implement `TestableMalwareScanner` in `ContosoDashboard/Services/TestableMalwareScanner.cs` and keep it replaceable for production scanners
+- [X] T020 Add document storage, scanner, queue producer, document, authorization, and reporting service registrations to `ContosoDashboard/Program.cs`
+- [X] T021 [P] Create queue message contracts and bounded retry configuration types in `ContosoDashboard/Services/DocumentQueueModels.cs`
+- [X] T022 Implement `IDocumentQueueService`/`DocumentQueueService` for Azure Queue Storage and a local/Azurite producer path in `ContosoDashboard/Services/`
+- [X] T023 Create `DocumentAuthorizationService` in `ContosoDashboard/Services/DocumentAuthorizationService.cs` for owner, project membership, direct share, department share, task, and administrator quarantine rules
+- [X] T024 [P] Add predefined document categories and allowlisted extension/MIME pairs plus the 25 MB limit in `ContosoDashboard/Services/DocumentValidation.cs`
+- [X] T025 [P] Add structured document logging and safe failure helpers in `ContosoDashboard/Services/DocumentLogging.cs`
+- [X] T026 [P] Add `DocumentShare`, document, tag, activity, and scan-attempt test fixtures in `ContosoDashboard.Tests/TestFixtures/DocumentTestFixtures.cs`
+- [X] T027 [P] Write failing authorization tests for ownership, project membership, role-only overgrant, direct shares, and department membership in `ContosoDashboard.Tests/Services/DocumentAuthorizationServiceTests.cs`
+- [X] T028 [P] Write failing validation/storage tests for 25 MB limit, allowlisted MIME/extension pairs, unsafe names, GUID keys, and cleanup in `ContosoDashboard.Tests/Services/DocumentStorageAndValidationTests.cs`
+- [X] T029 Run the focused test project and verify the foundational tests fail before implementation, as required by the test-first workflow
 
 **Checkpoint**: Foundation ready; user story implementation can begin
 
@@ -68,28 +68,28 @@
 
 ### Tests for User Story 1
 
-- [ ] T030 [P] [US1] Write failing batch upload contract tests for independent file success/rejection and no re-upload of successful files in `ContosoDashboard.Tests/Services/DocumentUploadTests.cs`
-- [ ] T031 [P] [US1] Write failing replacement/cleanup tests for upload storage failure, metadata failure, and no orphaned document in `ContosoDashboard.Tests/Services/DocumentUploadTests.cs`
-- [ ] T032 [P] [US1] Write failing queue retry and poison tests for transient failure, bounded retries, poison routing, idempotency, and inaccessible pending files in `ContosoDashboard.Tests/Services/DocumentScanQueueTests.cs`
-- [ ] T033 [P] [US1] Write failing Azure Functions processor tests for Available, Quarantined, transient, and repeated-correlation results in `DocumentScanner.Function.Tests/DocumentScanFunctionTests.cs`
-- [ ] T034 [P] [US1] Run the US1 tests and confirm they fail before implementation
+- [X] T030 [P] [US1] Write failing batch upload contract tests for independent file success/rejection and no re-upload of successful files in `ContosoDashboard.Tests/Services/DocumentUploadTests.cs`
+- [X] T031 [P] [US1] Write failing replacement/cleanup tests for upload storage failure, metadata failure, and no orphaned document in `ContosoDashboard.Tests/Services/DocumentUploadTests.cs`
+- [X] T032 [P] [US1] Write failing queue retry and poison tests for transient failure, bounded retries, poison routing, idempotency, and inaccessible pending files in `ContosoDashboard.Tests/Services/DocumentScanQueueTests.cs`
+- [X] T033 [P] [US1] Write failing Azure Functions processor tests for Available, Quarantined, transient, and repeated-correlation results in `DocumentScanner.Function.Tests/DocumentScanFunctionTests.cs`
+- [X] T034 [P] [US1] Run the US1 tests and confirm they fail before implementation
 
 ### Implementation for User Story 1
 
-- [ ] T035 [US1] Implement `DocumentService.UploadAsync` with independent per-file validation, GUID storage key creation, partial-success results, metadata creation, and storage/metadata cleanup in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T036 [US1] Enforce required title/category, optional project/task association, description `string(2000)`, tags `string(100)` per tag, and 1..26214400-byte file-size rules in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T037 [US1] Implement queue publication after metadata and file storage succeed, with `DocumentId`, `StorageKey`, `Attempt`, and `CorrelationId` in `ContosoDashboard/Services/DocumentQueueService.cs`
-- [ ] T038 [US1] Implement pending, available, quarantined, 30-day quarantine metadata, and administrator-only retry/purge state transitions in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T039 [US1] Implement `ProcessDocumentScan` with the Queue Storage trigger on `document-scans`, storage-provider loading, scanner invocation, and application scan-state boundary in `DocumentScanner.Function/Functions/ProcessDocumentScan.cs`
-- [ ] T040 [US1] Implement bounded Queue Storage dequeue/retry handling, poison routing to `document-scans-poison`, and repeat-attempt safeguards in `DocumentScanner.Function/Functions/ProcessDocumentScan.cs`
-- [ ] T041 [US1] Implement scan-attempt idempotency keyed by `DocumentId` plus `CorrelationId` and prevent reprocessing Available or Quarantined documents in `DocumentScanner.Function/Functions/ProcessDocumentScan.cs`
-- [ ] T042 [US1] Implement Azurite/local queue settings and a testable local pending-worker fallback in `DocumentScanner.Function/` and `ContosoDashboard/Services/`
-- [ ] T043 [US1] Implement `POST /api/documents/upload` in `ContosoDashboard/Controllers/DocumentsController.cs` with authentication, per-file batch responses, and the Pending/Rejected result contract
-- [ ] T044 [US1] Implement upload progress and independent retry-state UI in `ContosoDashboard/Pages/Documents.razor`, keeping successful files out of the retry set
-- [ ] T045 [US1] Add clear upload rejection messages for unsupported type/MIME pairs and files over 25 MB in `ContosoDashboard/Pages/Documents.razor`
-- [ ] T046 [US1] Add scan pending/quarantined status and administrator retry/purge actions in `ContosoDashboard/Pages/DocumentDetails.razor`
-- [ ] T047 [US1] Add upload, scan pending, scan available, quarantine, quarantine retry, and purge activity/audit records in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T048 [US1] Run US1 tests and address failures until batch upload, async scanning, quarantine, retry, poison, and cleanup behavior pass
+- [X] T035 [US1] Implement `DocumentService.UploadAsync` with independent per-file validation, GUID storage key creation, partial-success results, metadata creation, and storage/metadata cleanup in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T036 [US1] Enforce required title/category, optional project/task association, description `string(2000)`, tags `string(100)` per tag, and 1..26214400-byte file-size rules in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T037 [US1] Implement queue publication after metadata and file storage succeed, with `DocumentId`, `StorageKey`, `Attempt`, and `CorrelationId` in `ContosoDashboard/Services/DocumentQueueService.cs`
+- [X] T038 [US1] Implement pending, available, quarantined, 30-day quarantine metadata, and administrator-only retry/purge state transitions in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T039 [US1] Implement `ProcessDocumentScan` with the Queue Storage trigger on `document-scans`, storage-provider loading, scanner invocation, and application scan-state boundary in `DocumentScanner.Function/Functions/ProcessDocumentScan.cs`
+- [X] T040 [US1] Implement bounded Queue Storage dequeue/retry handling, poison routing to `document-scans-poison`, and repeat-attempt safeguards in `DocumentScanner.Function/Functions/ProcessDocumentScan.cs`
+- [X] T041 [US1] Implement scan-attempt idempotency keyed by `DocumentId` plus `CorrelationId` and prevent reprocessing Available or Quarantined documents in `DocumentScanner.Function/Functions/ProcessDocumentScan.cs`
+- [X] T042 [US1] Implement Azurite/local queue settings and a testable local pending-worker fallback in `DocumentScanner.Function/` and `ContosoDashboard/Services/`
+- [X] T043 [US1] Implement `POST /api/documents/upload` in `ContosoDashboard/Controllers/DocumentsController.cs` with authentication, per-file batch responses, and the Pending/Rejected result contract
+- [X] T044 [US1] Implement upload progress and independent retry-state UI in `ContosoDashboard/Pages/Documents.razor`, keeping successful files out of the retry set
+- [X] T045 [US1] Add clear upload rejection messages for unsupported type/MIME pairs and files over 25 MB in `ContosoDashboard/Pages/Documents.razor`
+- [X] T046 [US1] Add scan pending/quarantined status and administrator retry/purge actions in `ContosoDashboard/Pages/DocumentDetails.razor`
+- [X] T047 [US1] Add upload, scan pending, scan available, quarantine, quarantine retry, and purge activity/audit records in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T048 [US1] Run US1 tests and address failures until batch upload, async scanning, quarantine, retry, poison, and cleanup behavior pass
 
 **Checkpoint**: User Story 1 is independently functional as the MVP
 
@@ -103,20 +103,20 @@
 
 ### Tests for User Story 2
 
-- [ ] T049 [P] [US2] Write failing mine/shared/project/search and authorization tests in `ContosoDashboard.Tests/Services/DocumentListAndSearchTests.cs`
-- [ ] T050 [P] [US2] Write failing download/preview endpoint tests for owner, project member, direct/department share, pending/quarantined, and unauthorized cases in `ContosoDashboard.Tests/Controllers/DocumentsControllerTests.cs`
+- [X] T049 [P] [US2] Write failing mine/shared/project/search and authorization tests in `ContosoDashboard.Tests/Services/DocumentListAndSearchTests.cs`
+- [X] T050 [P] [US2] Write failing download/preview endpoint tests for owner, project member, direct/department share, pending/quarantined, and unauthorized cases in `ContosoDashboard.Tests/Controllers/DocumentsControllerTests.cs`
 
 ### Implementation for User Story 2
 
-- [ ] T051 [US2] Implement My Documents list, sorting by title/upload date/category/file size, and filtering by category/project/date range in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T052 [US2] Implement accessible search across title, description, tags, uploader name, and project while excluding unavailable or unauthorized documents in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T053 [US2] Implement `GET /api/documents/mine`, `/shared`, `/project/{projectId}`, and `/search` responses in `ContosoDashboard/Controllers/DocumentsController.cs`
-- [ ] T054 [US2] Implement authorized `download` streaming and safe filename/original MIME disposition outside `wwwroot` in `ContosoDashboard/Controllers/DocumentsController.cs`
-- [ ] T055 [US2] Implement `preview` with inline PDF/JPEG/PNG support and download/406 behavior for unsupported types in `ContosoDashboard/Controllers/DocumentsController.cs`
-- [ ] T056 [US2] Record download activity and structured authorization-denial/download logs without file content in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T057 [US2] Build My Documents and search/filter/sort UI in `ContosoDashboard/Pages/Documents.razor`
-- [ ] T058 [US2] Build document details with authorized preview/download actions in `ContosoDashboard/Pages/DocumentDetails.razor`
-- [ ] T059 [US2] Run US2 tests and verify only authorized Available documents are listed, searched, previewed, or downloaded
+- [X] T051 [US2] Implement My Documents list, sorting by title/upload date/category/file size, and filtering by category/project/date range in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T052 [US2] Implement accessible search across title, description, tags, uploader name, and project while excluding unavailable or unauthorized documents in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T053 [US2] Implement `GET /api/documents/mine`, `/shared`, `/project/{projectId}`, and `/search` responses in `ContosoDashboard/Controllers/DocumentsController.cs`
+- [X] T054 [US2] Implement authorized `download` streaming and safe filename/original MIME disposition outside `wwwroot` in `ContosoDashboard/Controllers/DocumentsController.cs`
+- [X] T055 [US2] Implement `preview` with inline PDF/JPEG/PNG support and download/406 behavior for unsupported types in `ContosoDashboard/Controllers/DocumentsController.cs`
+- [X] T056 [US2] Record download activity and structured authorization-denial/download logs without file content in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T057 [US2] Build My Documents and search/filter/sort UI in `ContosoDashboard/Pages/Documents.razor`
+- [X] T058 [US2] Build document details with authorized preview/download actions in `ContosoDashboard/Pages/DocumentDetails.razor`
+- [X] T059 [US2] Run US2 tests and verify only authorized Available documents are listed, searched, previewed, or downloaded
 
 **Checkpoint**: User Stories 1 and 2 are independently functional
 
@@ -130,22 +130,22 @@
 
 ### Tests for User Story 3
 
-- [ ] T060 [P] [US3] Write failing metadata/update/share/delete tests for owner-only enforcement and share target integrity in `ContosoDashboard.Tests/Services/DocumentMaintenanceTests.cs`
-- [ ] T061 [P] [US3] Write failing atomic replacement tests for storage failure, metadata failure, old-file retention, and old-file cleanup in `ContosoDashboard.Tests/Services/DocumentReplacementTests.cs`
-- [ ] T062 [P] [US3] Write failing notification and team-share tests for direct recipients and current department changes in `ContosoDashboard.Tests/Services/DocumentSharingTests.cs`
+- [X] T060 [P] [US3] Write failing metadata/update/share/delete tests for owner-only enforcement and share target integrity in `ContosoDashboard.Tests/Services/DocumentMaintenanceTests.cs`
+- [X] T061 [P] [US3] Write failing atomic replacement tests for storage failure, metadata failure, old-file retention, and old-file cleanup in `ContosoDashboard.Tests/Services/DocumentReplacementTests.cs`
+- [X] T062 [P] [US3] Write failing notification and team-share tests for direct recipients and current department changes in `ContosoDashboard.Tests/Services/DocumentSharingTests.cs`
 
 ### Implementation for User Story 3
 
-- [ ] T063 [US3] Implement owner-only metadata update in `ContosoDashboard/Services/DocumentService.cs`, preserving DocumentId and existing metadata on failure
-- [ ] T064 [US3] Implement `PUT /api/documents/{documentId}` and replacement endpoint behavior in `ContosoDashboard/Controllers/DocumentsController.cs`
-- [ ] T065 [US3] Implement atomic replacement: store new GUID file first, update record/key, delete new file on database failure, and delete old file only after successful update in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T066 [US3] Implement owner-only permanent delete and coordinated metadata/storage cleanup in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T067 [US3] Implement `DELETE /api/documents/{documentId}` and confirmation UI in `ContosoDashboard/Pages/DocumentDetails.razor`
-- [ ] T068 [US3] Implement direct and department share create/delete with exactly one target and owner-only authorization in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T069 [US3] Implement `POST/DELETE /api/documents/{documentId}/shares` endpoints and share controls in `ContosoDashboard/Pages/DocumentDetails.razor`
-- [ ] T070 [US3] Add Share and ProjectDocument notification types and create in-app recipient notifications in `ContosoDashboard/Models/Notification.cs` and `ContosoDashboard/Services/NotificationService.cs`
-- [ ] T071 [US3] Implement Shared with Me list and notification behavior in `ContosoDashboard/Pages/Documents.razor` and `ContosoDashboard/Pages/Notifications.razor`
-- [ ] T072 [US3] Run US3 tests and verify maintenance, replacement atomicity, sharing, notification, and ownership behavior
+- [X] T063 [US3] Implement owner-only metadata update in `ContosoDashboard/Services/DocumentService.cs`, preserving DocumentId and existing metadata on failure
+- [X] T064 [US3] Implement `PUT /api/documents/{documentId}` and replacement endpoint behavior in `ContosoDashboard/Controllers/DocumentsController.cs`
+- [X] T065 [US3] Implement atomic replacement: store new GUID file first, update record/key, delete new file on database failure, and delete old file only after successful update in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T066 [US3] Implement owner-only permanent delete and coordinated metadata/storage cleanup in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T067 [US3] Implement `DELETE /api/documents/{documentId}` and confirmation UI in `ContosoDashboard/Pages/DocumentDetails.razor`
+- [X] T068 [US3] Implement direct and department share create/delete with exactly one target and owner-only authorization in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T069 [US3] Implement `POST/DELETE /api/documents/{documentId}/shares` endpoints and share controls in `ContosoDashboard/Pages/DocumentDetails.razor`
+- [X] T070 [US3] Add Share and ProjectDocument notification types and create in-app recipient notifications in `ContosoDashboard/Models/Notification.cs` and `ContosoDashboard/Services/NotificationService.cs`
+- [X] T071 [US3] Implement Shared with Me list and notification behavior in `ContosoDashboard/Pages/Documents.razor` and `ContosoDashboard/Pages/Notifications.razor`
+- [X] T072 [US3] Run US3 tests and verify maintenance, replacement atomicity, sharing, notification, and ownership behavior
 
 **Checkpoint**: Ownership, maintenance, sharing, and notifications are independently functional
 
@@ -159,16 +159,16 @@
 
 ### Tests for User Story 4
 
-- [ ] T073 [P] [US4] Write failing task/project association tests for inherited projectId, active membership, role-only denial, and explicit-share exception in `ContosoDashboard.Tests/Services/DocumentProjectTaskTests.cs`
-- [ ] T074 [P] [US4] Write failing project list UI-state tests for member visibility and non-member exclusion in `ContosoDashboard.Tests/Pages/DocumentProjectPageTests.cs`
+- [X] T073 [P] [US4] Write failing task/project association tests for inherited projectId, active membership, role-only denial, and explicit-share exception in `ContosoDashboard.Tests/Services/DocumentProjectTaskTests.cs`
+- [X] T074 [P] [US4] Write failing project list UI-state tests for member visibility and non-member exclusion in `ContosoDashboard.Tests/Pages/DocumentProjectPageTests.cs`
 
 ### Implementation for User Story 4
 
-- [ ] T075 [US4] Resolve task upload association from `TaskItem.ProjectId` and require active project membership in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T076 [US4] Implement project document upload and project document listing in `ContosoDashboard/Pages/ProjectDetails.razor`
-- [ ] T077 [US4] Add task attachment/upload controls and task-document association in `ContosoDashboard/Pages/Tasks.razor`
-- [ ] T078 [US4] Notify current project members when a new document is added to their project in `ContosoDashboard/Services/DocumentService.cs` and `ContosoDashboard/Services/NotificationService.cs`
-- [ ] T079 [US4] Run US4 tests and verify project/task association and active-membership-only access
+- [X] T075 [US4] Resolve task upload association from `TaskItem.ProjectId` and require active project membership in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T076 [US4] Implement project document upload and project document listing in `ContosoDashboard/Pages/ProjectDetails.razor`
+- [X] T077 [US4] Add task attachment/upload controls and task-document association in `ContosoDashboard/Pages/Tasks.razor`
+- [X] T078 [US4] Notify current project members when a new document is added to their project in `ContosoDashboard/Services/DocumentService.cs` and `ContosoDashboard/Services/NotificationService.cs`
+- [X] T079 [US4] Run US4 tests and verify project/task association and active-membership-only access
 
 **Checkpoint**: Project/task document context is independently functional
 
@@ -182,15 +182,15 @@
 
 ### Tests for User Story 5
 
-- [ ] T080 [P] [US5] Write failing dashboard and report tests for latest five, count, activity aggregates, and administrator-only report access in `ContosoDashboard.Tests/Services/DocumentDashboardReportTests.cs`
+- [X] T080 [P] [US5] Write failing dashboard and report tests for latest five, count, activity aggregates, and administrator-only report access in `ContosoDashboard.Tests/Services/DocumentDashboardReportTests.cs`
 
 ### Implementation for User Story 5
 
-- [ ] T081 [US5] Implement latest five Available current-user uploads and document count in `ContosoDashboard/Services/DocumentService.cs` and expose `GET /api/documents/dashboard`
-- [ ] T082 [US5] Update `ContosoDashboard/Pages/Index.razor` and `ContosoDashboard/Services/DashboardService.cs` to display document count and latest documents
-- [ ] T083 [US5] Implement administrator report aggregation for uploaded file types, active uploaders, and access patterns in `ContosoDashboard/Services/DocumentReportService.cs`
-- [ ] T084 [US5] Implement `GET /api/admin/documents/reports/activity` and an administrator report UI in `ContosoDashboard/Pages/` or a dedicated Razor page
-- [ ] T085 [US5] Run US5 tests and verify dashboard and administrator reporting behavior
+- [X] T081 [US5] Implement latest five Available current-user uploads and document count in `ContosoDashboard/Services/DocumentService.cs` and expose `GET /api/documents/dashboard`
+- [X] T082 [US5] Update `ContosoDashboard/Pages/Index.razor` and `ContosoDashboard/Services/DashboardService.cs` to display document count and latest documents
+- [X] T083 [US5] Implement administrator report aggregation for uploaded file types, active uploaders, and access patterns in `ContosoDashboard/Services/DocumentReportService.cs`
+- [X] T084 [US5] Implement `GET /api/admin/documents/reports/activity` and an administrator report UI in `ContosoDashboard/Pages/` or a dedicated Razor page
+- [X] T085 [US5] Run US5 tests and verify dashboard and administrator reporting behavior
 
 **Checkpoint**: All user stories are independently functional
 
@@ -200,16 +200,18 @@
 
 **Purpose**: Security, reliability, documentation, and repository-wide validation
 
-- [ ] T086 [P] Add or update navigation entries for Documents, Shared with Me, and administrator reports in `ContosoDashboard/Pages/_Imports.razor` and relevant layout/navigation files
-- [ ] T087 [P] Review every document endpoint and service operation for owner, membership, share, Available-state, and administrator-only enforcement
-- [ ] T088 [P] Add structured logging and safe exception handling to controller endpoints, queue processing, storage operations, and quarantine administration
-- [ ] T089 [P] Add database migration or an intentional existing-`EnsureCreated()` recreation/update strategy and document reset behavior in `ContosoDashboard/Data/ApplicationDbContext.cs`
-- [ ] T090 [P] Add cleanup validation for 30-day quarantine eligibility and administrator retry/purge operations in `ContosoDashboard/Services/DocumentService.cs`
-- [ ] T091 [P] Add queue and local/Azurite operations documentation to `specs/001-document-upload-management/quickstart.md`
-- [ ] T092 [P] Add storage interface/provider migration notes and configuration examples to `specs/001-document-upload-management/quickstart.md`
-- [ ] T093 [P] Run the complete build and test suite with `dotnet build` and `dotnet test` for `ContosoDashboard.sln` or the repository projects
+- [X] T086 [P] Add or update navigation entries for Documents, Shared with Me, and administrator reports in `ContosoDashboard/Pages/_Imports.razor` and relevant layout/navigation files
+- [X] T087 [P] Review every document endpoint and service operation for owner, membership, share, Available-state, and administrator-only enforcement
+- [X] T088 [P] Add structured logging and safe exception handling to controller endpoints, queue processing, storage operations, and quarantine administration
+- [X] T089 [P] Add database migration or an intentional existing-`EnsureCreated()` recreation/update strategy and document reset behavior in `ContosoDashboard/Data/ApplicationDbContext.cs`
+- [X] T090 [P] Add cleanup validation for 30-day quarantine eligibility and administrator retry/purge operations in `ContosoDashboard/Services/DocumentService.cs`
+- [X] T091 [P] Add queue and local/Azurite operations documentation to `specs/001-document-upload-management/quickstart.md`
+- [X] T092 [P] Add storage interface/provider migration notes and configuration examples to `specs/001-document-upload-management/quickstart.md`
+- [X] T093 [P] Run the complete build and test suite with `dotnet build` and `dotnet test` for `ContosoDashboard.sln` or the repository projects
 - [ ] T094 [P] Run the quickstart upload, scan, authorization, replacement, deletion, project, dashboard, and Azurite scenarios manually and record validation results
-- [ ] T095 [P] Review all generated tasks and implementation diffs for checklist format, exact file paths, and unrelated-file prevention
+- [X] T095 [P] Review all generated tasks and implementation diffs for checklist format, exact file paths, and unrelated-file prevention
+
+**Manual validation note**: T094 remains unchecked because Azurite, Azure Functions Core Tools (`func`), and SQL Server LocalDB (`sqllocaldb`) are not installed in the current environment. Automated unit/worker tests and the solution build were run instead; the quickstart runtime scenarios should be repeated in an environment with these prerequisites.
 
 ---
 
